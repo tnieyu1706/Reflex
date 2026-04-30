@@ -1,94 +1,94 @@
-Khung Dependency Injection siêu nhanh, tối giản và mạnh mẽ cho Unity (Bản Custom)
+Ultra-fast, minimal, and powerful Dependency Injection for Unity (Custom Version)
 
-Reflex là một framework Dependency Injection (DI) cho Unity, giúp tách biệt việc khởi tạo đối tượng khỏi việc sử dụng chúng. Bản tùy chỉnh này mở rộng khả năng của Reflex gốc với các tính năng về LocalScope, Inject Source, và các Instantiate Extensions mạnh mẽ.
+Reflex is a Dependency Injection (DI) framework for Unity that decouples object creation from usage. This custom version extends the original Reflex capabilities with features like LocalScope, Inject Source, and powerful Instantiate Extensions.
 
-🌟 Các tính năng nổi bật (Bản Custom)
+🌟 Key Features (Custom Version)
 
-Ngoài các tính năng gốc (Source Generation, Immutable Container, High Performance), phiên bản này bao gồm các cải tiến quan trọng:
+In addition to the core features (Source Generation, Immutable Container, High Performance), this version includes significant improvements:
 
-LocalScope (GameObject-level Container): Cho phép tạo container riêng cho một GameObject và các con của nó. Cực kỳ hữu ích cho các UI Panel phức tạp hoặc các hệ thống độc lập trong Scene.
+LocalScope (GameObject-level Container): Allows creating a specific container for a GameObject and its children. Extremely useful for complex UI Panels or isolated systems within a Scene.
 
-InjectSource: Kiểm soát chính xác nguồn resolve dependency (Root, Scene, Local) thông qua Attribute.
+InjectSource: Precisely control the dependency resolution source (Root, Scene, Local) via Attributes.
 
-Instantiate & Bind Extensions: Hỗ trợ khởi tạo Prefab/Component và thực hiện Injection ngay lập tức trước khi phương thức Awake() chạy.
+Instantiate & Bind Extensions: Support for instantiating Prefabs/Components and performing injection immediately before the Awake() method runs.
 
-Visual Installers: Các Installer chuyên biệt cho MonoBehaviour và ScriptableObject với giao diện chọn Contract (Interface/Base Class) trực quan trong Inspector.
+Visual Installers: Specialized installers for MonoBehaviour and ScriptableObject with an intuitive Inspector interface for selecting Contracts (Interfaces/Base Classes).
 
-Scene Hierarchy Inheritance: Thiết lập quan hệ cha-con giữa các Scene Container trực tiếp qua Inspector của ContainerScope.
+Scene Hierarchy Inheritance: Establish parent-child relationships between Scene Containers directly through the ContainerScope Inspector.
 
-🛠 Các thay đổi chính & Cách sử dụng
+🛠 Core Changes & Usage
 
-1. LocalScope - Container cấp GameObject
+1. LocalScope - GameObject-level Container
 
-LocalScope hoạt động như một "Mini-Container" trong phân cấp Transform.
+LocalScope acts as a "Mini-Container" within the Transform hierarchy.
 
-Nó tự động tạo một container con kế thừa từ container gần nhất (thường là Scene Container).
+It automatically creates a child container inheriting from the nearest container (usually the Scene Container).
 
-Tự động Inject cho bản thân và các GameObject con.
+Automatically injects into itself and all child GameObjects.
 
-Cách dùng: Gắn component LocalScope vào một GameObject. Thêm các Installer vào chính GameObject đó để đăng ký binding riêng cho phân cấp này.
+Usage: Attach the LocalScope component to a GameObject. Add Installers to that same GameObject to register specific bindings for this hierarchy.
 
-2. Chỉ định nguồn Injection (InjectSource)
+2. Specifying Injection Source (InjectSource)
 
-Bạn có thể ghi đè logic resolve mặc định bằng cách chỉ định nguồn thông qua InjectAttribute:
+You can override the default resolution logic by specifying the source via the InjectAttribute:
 
 public class MyService : MonoBehaviour
 {
-    // Lấy instance từ Container của Scene, ngay cả khi LocalScope có ghi đè binding này
+    // Resolves the instance from the Scene Container, even if a LocalScope overrides it
     [Inject(Source = InjectSource.Scene)] 
     private ILogger _sceneLogger;
 
-    // Chỉ tìm trong Root (Project) Container
+    // Only searches within the Root (Project) Container
     [Inject(Source = InjectSource.Root)] 
     private IConfig _globalConfig;
 }
 
 
-3. Khởi tạo đối tượng động (Extensions)
+3. Dynamic Object Creation (Extensions)
 
-Giải quyết vấn đề dependency không sẵn sàng trong Awake. Các phương thức mở rộng mới đảm bảo injection hoàn tất trước khi đối tượng "thức tỉnh":
+Solves the issue of dependencies not being ready during Awake. New extension methods ensure injection is complete before the object "awakens":
 
-// Khởi tạo prefab và inject ngay lập tức
+// Instantiate prefab and inject immediately
 var enemy = container.InstantiateAndBind(enemyPrefab, spawnPoint);
 
-// Thêm component và inject trước khi Awake chạy
+// Add component and inject before Awake runs
 var health = container.AddComponentAndBind<Health>(gameObject);
 
 
-4. Installer trực quan (Generic Installers)
+4. Visual Installers (Generic Installers)
 
-Sử dụng MonoBehaviourInstaller hoặc ScriptableObjectInstaller để đăng ký các instance có sẵn trong Scene hoặc Asset:
+Use MonoBehaviourInstaller or ScriptableObjectInstaller to register instances available in the Scene or Assets:
 
-Kéo thả object vào danh sách Bindings.
+Drag and drop objects into the Bindings list.
 
-Hệ thống sẽ tự động liệt kê tất cả các Interface và Class cha hợp lệ để bạn tích chọn (Contract).
+The system automatically lists all valid Interfaces and Base Classes for you to toggle (Contracts).
 
-5. Phân cấp Scene qua Inspector
+5. Scene Hierarchy via Inspector
 
-Trong ContainerScope (SceneScope), bạn hiện có thể kéo thả một Scene Asset vào trường Parent Scene.
+In ContainerScope (SceneScope), you can now drag and drop a Scene Asset into the Parent Scene field.
 
-Điều này cho phép Scene hiện tại kế thừa toàn bộ dependency từ Scene cha đã định nghĩa.
+This allows the current Scene to inherit all dependencies from the defined Parent Scene.
 
-Hỗ trợ mạnh mẽ cho kiến trúc Multi-scene (ví dụ: Scene "UI" kế thừa từ Scene "Core").
+Strongly supports Multi-scene architectures (e.g., a "UI" Scene inheriting from a "Core" Scene).
 
-🎬 Thứ tự thực thi (Execution Order)
+🎬 Execution Order
 
-Bản custom điều chỉnh thứ tự thực thi để đảm bảo tính ổn định:
+The custom version adjusts execution order to ensure stability:
 
-ContainerScope (Scene): -1,000,000,000 (Khởi tạo container cho Scene).
+ContainerScope (Scene): -1,000,000,000 (Initializes the Scene container).
 
-LocalScope: SceneContainerScope + 10 (Khởi tạo container cho GameObject sau Scene).
+LocalScope: SceneContainerScope + 10 (Initializes the GameObject container after the Scene).
 
-Các Component thông thường: Thực thi sau khi đã được Inject đầy đủ.
+Standard Components: Execute after being fully injected.
 
-🔍 Chẩn đoán & Debug (Diagnosis)
+🔍 Diagnosis & Debugging
 
-Bản custom tích hợp sẵn hệ thống Diagnosis giúp ghi lại CallStack của nơi thực hiện Binding và nơi thực hiện Resolution.
+This custom version integrates a Diagnosis system that records the CallStack for both Binding and Resolution points.
 
-Mở Window → Analysis → Reflex Debugger để xem chi tiết.
+Open Window → Analysis → Reflex Debugger to view details.
 
-Kích hoạt bằng cách thêm symbol REFLEX_DEBUG trong Player Settings.
+Enable by adding the REFLEX_DEBUG scripting define symbol in Player Settings.
 
 📜 License
 
-Phiên bản này kế thừa giấy phép MIT. Mọi đóng góp dựa trên bản gốc của Gustavo Santos đều được hoan nghênh.
+This version inherits the MIT license. Contributions based on the original work by Gustavo Santos are welcome.
