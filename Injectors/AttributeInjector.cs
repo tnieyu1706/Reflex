@@ -1,6 +1,5 @@
 using Reflex.Caching;
 using Reflex.Core;
-
 using System.Runtime.CompilerServices;
 
 namespace Reflex.Injectors

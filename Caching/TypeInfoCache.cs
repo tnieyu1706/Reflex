@@ -25,33 +25,39 @@ namespace Reflex.Caching
 
         internal static TypeAttributeInfo Generate(Type type)
         {
-            using var pooled1 = ListPool<FieldInfo>.Get(out var fieldList);
-            using var pooled2 = ListPool<PropertyInfo>.Get(out var propertyList);
+            using var pooled1 = ListPool<InjectableFieldInfo>.Get(out var fieldList);
+            using var pooled2 = ListPool<InjectablePropertyInfo>.Get(out var propertyList);
             using var pooled3 = ListPool<InjectableMethodInfo>.Get(out var methodList);
             
             while (type != null && type != typeof(object))
             {
                 foreach (var field in type.GetFields(Flags))
                 {
-                    if (field.IsDefined(typeof(InjectAttribute)))
+                    var attribute = field.GetCustomAttribute<InjectAttribute>();
+                    if (attribute != null)
                     {
-                        fieldList.Add(field);
+                        fieldList.Add(new InjectableFieldInfo(field, attribute.Source));
                     }
                 }
 
                 foreach (var property in type.GetProperties(Flags))
                 {
-                    if (property.CanWrite && property.IsDefined(typeof(InjectAttribute)))
+                    if (property.CanWrite)
                     {
-                        propertyList.Add(property);
+                        var attribute = property.GetCustomAttribute<InjectAttribute>();
+                        if (attribute != null)
+                        {
+                            propertyList.Add(new InjectablePropertyInfo(property, attribute.Source));
+                        }
                     }
                 }
                 
                 foreach (var method in type.GetMethods(Flags))
                 {
-                    if (method.IsDefined(typeof(InjectAttribute)))
+                    var attribute = method.GetCustomAttribute<InjectAttribute>();
+                    if (attribute != null)
                     {
-                        methodList.Add(new InjectableMethodInfo(method));
+                        methodList.Add(new InjectableMethodInfo(method, attribute.Source));
                     }
                 }
 

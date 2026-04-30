@@ -1,4 +1,5 @@
 using System.Reflection;
+using Reflex.Enums;
 
 namespace Reflex.Caching
 {
@@ -6,11 +7,13 @@ namespace Reflex.Caching
     {
         public readonly MethodInfo MethodInfo;
         public readonly ParameterInfo[] Parameters;
+        public readonly InjectSource Source;
 
-        public InjectableMethodInfo(MethodInfo methodInfo)
+        public InjectableMethodInfo(MethodInfo methodInfo, InjectSource source)
         {
             MethodInfo = methodInfo;
             Parameters = methodInfo.GetParameters();
+            Source = source;
         }
     }
 }
