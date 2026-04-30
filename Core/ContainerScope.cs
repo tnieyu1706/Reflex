@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.Pool;
 using Reflex.Injectors;
+using Reflex.Utilities;
 
 namespace Reflex.Core
 {
@@ -12,9 +13,10 @@ namespace Reflex.Core
 
         [Tooltip("Drag and drop the parent Scene here. Leave empty to fallback to the Root/Project container.")]
         [SerializeField]
-        private string _parentSceneName;
+        private SceneReference _parentScene;
 
-        public string ParentSceneName => _parentSceneName;
+        // Trả về tên của Scene để UnityInjector xử lý, an toàn với null
+        public string ParentSceneName => _parentScene != null ? _parentScene.SceneName : string.Empty;
 
         private void Awake()
         {
@@ -34,10 +36,5 @@ namespace Reflex.Core
                 }
             }
         }
-
-#if UNITY_EDITOR
-        // Reference for Editor drag-and-drop support. Ignored in builds.
-        [SerializeField] private UnityEditor.SceneAsset _parentSceneAsset;
-#endif
     }
 }

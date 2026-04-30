@@ -7,13 +7,12 @@ namespace Reflex.Editor
     [CustomEditor(typeof(ContainerScope))]
     public class ContainerScopeEditor : UnityEditor.Editor
     {
-        private SerializedProperty _parentSceneNameProp;
-        private SerializedProperty _parentSceneAssetProp;
+        private SerializedProperty _parentSceneProp;
 
         private void OnEnable()
         {
-            _parentSceneNameProp = serializedObject.FindProperty("_parentSceneName");
-            _parentSceneAssetProp = serializedObject.FindProperty("_parentSceneAsset");
+            // Trỏ tới biến mới trong ContainerScope
+            _parentSceneProp = serializedObject.FindProperty("_parentScene");
         }
 
         public override void OnInspectorGUI()
@@ -23,23 +22,23 @@ namespace Reflex.Editor
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Hierarchy Configuration", EditorStyles.boldLabel);
 
-            EditorGUI.BeginChangeCheck();
-
-            EditorGUILayout.PropertyField(_parentSceneAssetProp,
+            // Vẽ giao diện chọn Scene (Sẽ tự động gọi SceneReferencePropertyDrawer)
+            EditorGUILayout.PropertyField(_parentSceneProp,
                 new GUIContent("Parent Scene", "Drop parent Scene here. Leave empty for Root Scope."));
 
-            if (EditorGUI.EndChangeCheck())
-            {
-                // Update string name when asset changes for runtime usage
-                _parentSceneNameProp.stringValue = _parentSceneAssetProp.objectReferenceValue != null
-                    ? _parentSceneAssetProp.objectReferenceValue.name
-                    : string.Empty;
-            }
+            // Trích xuất path để hiển thị tên Scene trong HelpBox
+            var scenePathProp = _parentSceneProp.FindPropertyRelative("scenePath");
+            string currentPath = scenePathProp != null ? scenePathProp.stringValue : string.Empty;
 
-            if (!string.IsNullOrEmpty(_parentSceneNameProp.stringValue))
+            if (!string.IsNullOrEmpty(currentPath))
             {
-                EditorGUILayout.HelpBox($"Runtime Parent Scene: '{_parentSceneNameProp.stringValue}'",
-                    MessageType.Info);
+                // Parse tên Scene từ đường dẫn
+                int slash = currentPath.LastIndexOf('/');
+                string nameWithExt = currentPath.Substring(slash + 1);
+                int dot = nameWithExt.LastIndexOf('.');
+                string sceneName = dot > -1 ? nameWithExt.Substring(0, dot) : nameWithExt;
+
+                EditorGUILayout.HelpBox($"Runtime Parent Scene: '{sceneName}'", MessageType.Info);
             }
             else
             {
