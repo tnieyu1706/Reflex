@@ -17,8 +17,7 @@ namespace Reflex.Utilities
 #endif
 
         // This should only ever be set during serialization/deserialization!
-        [SerializeField]
-        private string scenePath = string.Empty;
+        [SerializeField] private string scenePath = string.Empty;
 
         // Use this when you want to actually have the scene path
         public string ScenePath
@@ -48,7 +47,7 @@ namespace Reflex.Utilities
             {
                 var path = ScenePath;
                 if (string.IsNullOrEmpty(path)) return string.Empty;
-                
+
                 int slash = path.LastIndexOf('/');
                 string name = path.Substring(slash + 1);
                 int dot = name.LastIndexOf('.');
@@ -78,12 +77,12 @@ namespace Reflex.Utilities
 #endif
         }
 
-
-
 #if UNITY_EDITOR
         private UnityEditor.SceneAsset GetSceneAssetFromPath()
         {
-            return string.IsNullOrEmpty(scenePath) ? null : UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEditor.SceneAsset>(scenePath);
+            return string.IsNullOrEmpty(scenePath)
+                ? null
+                : UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEditor.SceneAsset>(scenePath);
         }
 
         private string GetScenePathFromAsset()
@@ -114,7 +113,7 @@ namespace Reflex.Utilities
             if (!string.IsNullOrEmpty(scenePath))
             {
                 sceneAsset = GetSceneAssetFromPath();
-                
+
                 // If the scene was deleted or moved while Unity was closed, the path might be invalid.
                 if (sceneAsset == null)
                 {

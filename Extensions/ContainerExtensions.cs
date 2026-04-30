@@ -32,7 +32,7 @@ namespace Reflex.Extensions
                     // Traverse up to find the exact container registered to a Scene
                     while (node != null)
                     {
-                        // Kiểm tra xem node hiện tại có nằm trong danh sách Scene Containers không
+                        // Check if the current node is in the Scene Containers list
                         if (UnityInjector.ContainersPerScene.ContainsValue(node))
                         {
                             return node;

@@ -20,7 +20,7 @@ namespace Reflex.Injectors
             var methodParametersLength = methodParameters.Length;
             var arguments = ArrayPool.Rent(methodParametersLength);
 
-            // Quyết định Container dựa trên InjectSource (Sử dụng extension method)
+            // Determine the Container based on InjectSource (Using extension method)
             var targetContainer = container.GetTargetContainer(method.Source);
 
             try
@@ -39,7 +39,7 @@ namespace Reflex.Injectors
                         }
                         else
                         {
-                            throw exception; // Ném thẳng exception cũ thay vì new Exception mới để giữ callstack
+                            throw exception; // Throw the original exception directly instead of wrapping it to preserve the callstack
                         }
                     }
                 }

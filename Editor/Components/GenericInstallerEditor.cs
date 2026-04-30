@@ -37,16 +37,16 @@ namespace Reflex.Editor
 
                 EditorGUILayout.BeginHorizontal();
 
-                // Luôn hiển thị trường gán Target
+                // Always display the Target assignment field
                 EditorGUI.BeginChangeCheck();
                 EditorGUILayout.PropertyField(targetProp, new GUIContent($"Target {i + 1}"));
                 if (EditorGUI.EndChangeCheck())
                 {
                     contractsProp.ClearArray();
-                    isExpandedProp.boolValue = true; // Tự động mở foldout khi gán target mới
+                    isExpandedProp.boolValue = true; // Automatically open the foldout when a new target is assigned
                 }
 
-                // Nút Remove
+                // Remove button
                 if (GUILayout.Button("X", GUILayout.Width(24)))
                 {
                     _bindingsProp.DeleteArrayElementAtIndex(i);
@@ -62,7 +62,7 @@ namespace Reflex.Editor
                 {
                     EditorGUILayout.Space(2);
 
-                    // Foldout dành riêng cho phần Contracts
+                    // Dedicated foldout for Contracts section
                     isExpandedProp.boolValue =
                         EditorGUILayout.Foldout(isExpandedProp.boolValue, "Contracts Configuration", true);
 
@@ -105,7 +105,7 @@ namespace Reflex.Editor
                 var typeName = type.AssemblyQualifiedName;
                 bool isSelected = selectedTypeNames.Contains(typeName);
 
-                // Chỉ hiển thị tên Class/Interface ngắn gọn
+                // Only display short Class/Interface names
                 string displayName = type.Name;
 
                 bool newSelected = EditorGUILayout.ToggleLeft(displayName, isSelected);
@@ -134,7 +134,7 @@ namespace Reflex.Editor
             }
 
             var currentBase = type.BaseType;
-            // Bỏ qua các class gốc của Unity để list gọn gàng (dùng chung cho cả SC và Mono)
+            // Ignore Unity's base classes to keep the list clean (shared for both SC and Mono)
             while (currentBase != null &&
                    currentBase != typeof(MonoBehaviour) &&
                    currentBase != typeof(Behaviour) &&

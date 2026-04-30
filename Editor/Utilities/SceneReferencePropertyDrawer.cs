@@ -5,12 +5,12 @@ using Reflex.Utilities;
 namespace Reflex.Editor.Utilities
 {
     /// <summary>
-    /// Custom PropertyDrawer cho SceneReference, cho phép kéo thả SceneAsset trên Inspector.
+    /// Custom PropertyDrawer for SceneReference, allowing drag and drop of SceneAsset in the Inspector.
     /// </summary>
     [CustomPropertyDrawer(typeof(SceneReference))]
     public class SceneReferencePropertyDrawer : PropertyDrawer
     {
-        // Tên các field (phải khớp chính xác với tên biến trong class SceneReference)
+        // Field names (must exactly match the variable names in the SceneReference class)
         private const string sceneAssetPropertyString = "sceneAsset";
         private const string scenePathPropertyString = "scenePath";
 
@@ -18,18 +18,18 @@ namespace Reflex.Editor.Utilities
         {
             EditorGUI.BeginProperty(position, GUIContent.none, property);
 
-            // Tìm các SerializedProperties
+            // Find the SerializedProperties
             SerializedProperty sceneAssetProperty = property.FindPropertyRelative(sceneAssetPropertyString);
             SerializedProperty scenePathProperty = property.FindPropertyRelative(scenePathPropertyString);
 
-            // Vẽ trường kéo thả đối tượng (chỉ hiển thị dưới dạng SceneAsset)
+            // Draw the object drag and drop field (only display as SceneAsset)
             position = EditorGUI.PrefixLabel(position, GUIUtility.GetControlID(FocusType.Passive), label);
 
             if (sceneAssetProperty != null)
             {
                 EditorGUI.BeginChangeCheck();
 
-                // Hiển thị ô chọn Object kiểu SceneAsset
+                // Display the Object picker for SceneAsset
                 Object value = EditorGUI.ObjectField(position, sceneAssetProperty.objectReferenceValue,
                     typeof(SceneAsset), false);
 
@@ -37,7 +37,7 @@ namespace Reflex.Editor.Utilities
                 {
                     sceneAssetProperty.objectReferenceValue = value;
 
-                    // Cập nhật đường dẫn ẩn (để serialize cho runtime)
+                    // Update the hidden path (for runtime serialization)
                     if (sceneAssetProperty.objectReferenceValue != null)
                     {
                         scenePathProperty.stringValue =

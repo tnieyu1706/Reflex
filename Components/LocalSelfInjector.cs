@@ -6,6 +6,12 @@ using UnityEngine;
 
 namespace Reflex.Components
 {
+    /// <summary>
+    /// Acts as a data CONSUMER at the GameObject level.
+    /// Finds the closest available Container (from a parent LocalScope, or fallbacks to the Scene Container) 
+    /// and injects dependencies into the attached GameObject based on the chosen strategy.
+    /// It does NOT create any new Containers.
+    /// </summary>
     [DefaultExecutionOrder(ContainerScope.SceneContainerScopeExecutionOrder + 100)] // +100 instead of +1 to leave room for other user custom components
     internal sealed class LocalSelfInjector : MonoBehaviour
     {
@@ -13,7 +19,7 @@ namespace Reflex.Components
 
         private void Awake()
         {
-            // THAY ĐỔI Ở ĐÂY: Thay vì lấy thẳng từ Scene, lấy từ container gần nhất trong hierarchy
+            // CHANGES HERE: Instead of getting directly from the Scene, get from the closest container in the hierarchy
             if (!gameObject.TryGetClosestLocalContainer(out var container)) return;
 
             switch (_injectionStrategy)

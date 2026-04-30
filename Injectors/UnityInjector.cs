@@ -117,7 +117,7 @@ namespace Reflex.Injectors
                 }
                 else
                 {
-                    // Graceful fallback cho trường hợp test 1 scene độc lập (Isolated Testing)
+                    // Graceful fallback for isolated scene testing (Isolated Testing)
                     ReflexLogger.Log(
                         $"Parent scene '{containerScope.ParentSceneName}' is not loaded. Gracefully falling back to RootContainer (Isolated Test Mode).",
                         LogLevel.Info);
@@ -126,7 +126,7 @@ namespace Reflex.Injectors
 
             return parentContainer.Scope(builder =>
             {
-                builder.SetName($"{scene.name} ({scene.GetHashCode()})");
+                builder.SetName(Reflex.Utilities.ScopeUtils.GetSceneContainerName(scene));
                 containerScope.InstallBindings(builder);
                 ReflexLogger.Log($"Scene ({scene.name}) Bindings Installed", LogLevel.Info, containerScope.gameObject);
             });

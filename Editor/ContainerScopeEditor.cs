@@ -11,7 +11,7 @@ namespace Reflex.Editor
 
         private void OnEnable()
         {
-            // Trỏ tới biến mới trong ContainerScope
+            // Point to the new variable in ContainerScope
             _parentSceneProp = serializedObject.FindProperty("_parentScene");
         }
 
@@ -22,17 +22,17 @@ namespace Reflex.Editor
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Hierarchy Configuration", EditorStyles.boldLabel);
 
-            // Vẽ giao diện chọn Scene (Sẽ tự động gọi SceneReferencePropertyDrawer)
+            // Draw the Scene selection UI (Automatically calls SceneReferencePropertyDrawer)
             EditorGUILayout.PropertyField(_parentSceneProp,
                 new GUIContent("Parent Scene", "Drop parent Scene here. Leave empty for Root Scope."));
 
-            // Trích xuất path để hiển thị tên Scene trong HelpBox
+            // Extract the path to display the Scene name in the HelpBox
             var scenePathProp = _parentSceneProp.FindPropertyRelative("scenePath");
             string currentPath = scenePathProp != null ? scenePathProp.stringValue : string.Empty;
 
             if (!string.IsNullOrEmpty(currentPath))
             {
-                // Parse tên Scene từ đường dẫn
+                // Parse the Scene name from the path
                 int slash = currentPath.LastIndexOf('/');
                 string nameWithExt = currentPath.Substring(slash + 1);
                 int dot = nameWithExt.LastIndexOf('.');

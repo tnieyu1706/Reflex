@@ -12,7 +12,7 @@ namespace Reflex.Injectors
         {
             try
             {
-                // Quyết định Container dựa trên InjectSource (Sử dụng extension method)
+                // Determine the Container based on InjectSource (Using extension method)
                 var targetContainer = container.GetTargetContainer(field.Source);
 
                 field.FieldInfo.SetValue(instance, targetContainer.Resolve(field.FieldInfo.FieldType));

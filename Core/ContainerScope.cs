@@ -1,11 +1,14 @@
-﻿using System;
+﻿using Reflex.Injectors;
+using Reflex.Utilities;
 using UnityEngine;
 using UnityEngine.Pool;
-using Reflex.Injectors;
-using Reflex.Utilities;
 
 namespace Reflex.Core
 {
+    /// <summary>
+    /// Responsible for creating and managing the Dependency Injection Container for a Unity Scene.
+    /// It collects all components implementing <see cref="IInstaller"/> in its hierarchy to build the scene's isolated environment.
+    /// </summary>
     [DefaultExecutionOrder(SceneContainerScopeExecutionOrder)]
     public class ContainerScope : MonoBehaviour
     {
@@ -15,7 +18,7 @@ namespace Reflex.Core
         [SerializeField]
         private SceneReference _parentScene;
 
-        // Trả về tên của Scene để UnityInjector xử lý, an toàn với null
+        // Returns the Scene name for UnityInjector to process, safe with null
         public string ParentSceneName => _parentScene != null ? _parentScene.SceneName : string.Empty;
 
         private void Awake()
