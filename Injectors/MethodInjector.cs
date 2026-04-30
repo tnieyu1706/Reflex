@@ -1,8 +1,8 @@
 using System;
 using Reflex.Caching;
 using Reflex.Core;
-using Reflex.Enums;
 using Reflex.Exceptions;
+using Reflex.Extensions;
 using Reflex.Pooling;
 
 namespace Reflex.Injectors
@@ -20,10 +20,8 @@ namespace Reflex.Injectors
             var methodParametersLength = methodParameters.Length;
             var arguments = ArrayPool.Rent(methodParametersLength);
 
-            // Quyết định Container dựa trên InjectSource
-            var targetContainer = method.Source == InjectSource.Root && Container.RootContainer != null
-                ? Container.RootContainer
-                : container;
+            // Quyết định Container dựa trên InjectSource (Sử dụng extension method)
+            var targetContainer = container.GetTargetContainer(method.Source);
 
             try
             {
@@ -41,7 +39,7 @@ namespace Reflex.Injectors
                         }
                         else
                         {
-                            throw exception;
+                            throw exception; // Ném thẳng exception cũ thay vì new Exception mới để giữ callstack
                         }
                     }
                 }

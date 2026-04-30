@@ -7,24 +7,25 @@ using UnityEngine;
 namespace Reflex.Components
 {
     [DefaultExecutionOrder(ContainerScope.SceneContainerScopeExecutionOrder + 100)] // +100 instead of +1 to leave room for other user custom components
-    internal sealed class GameObjectSelfInjector : MonoBehaviour
+    internal sealed class LocalSelfInjector : MonoBehaviour
     {
         [SerializeField] private InjectionStrategy _injectionStrategy = InjectionStrategy.Recursive;
 
         private void Awake()
         {
-            var sceneContainer = gameObject.scene.GetSceneContainer();
+            // THAY ĐỔI Ở ĐÂY: Thay vì lấy thẳng từ Scene, lấy từ container gần nhất trong hierarchy
+            if (!gameObject.TryGetClosestLocalContainer(out var container)) return;
 
             switch (_injectionStrategy)
             {
                 case InjectionStrategy.Single:
-                    GameObjectInjector.InjectSingle(gameObject, sceneContainer);
+                    GameObjectInjector.InjectSingle(gameObject, container);
                     break;
                 case InjectionStrategy.Object:
-                    GameObjectInjector.InjectObject(gameObject, sceneContainer);
+                    GameObjectInjector.InjectObject(gameObject, container);
                     break;
                 case InjectionStrategy.Recursive:
-                    GameObjectInjector.InjectRecursive(gameObject, sceneContainer);
+                    GameObjectInjector.InjectRecursive(gameObject, container);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(_injectionStrategy.ToString());

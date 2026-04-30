@@ -1,8 +1,8 @@
 using System;
 using Reflex.Caching;
 using Reflex.Core;
-using Reflex.Enums;
 using Reflex.Exceptions;
+using Reflex.Extensions;
 
 namespace Reflex.Injectors
 {
@@ -12,10 +12,8 @@ namespace Reflex.Injectors
         {
             try
             {
-                // Quyết định Container dựa trên InjectSource
-                var targetContainer = field.Source == InjectSource.Root && Container.RootContainer != null 
-                    ? Container.RootContainer 
-                    : container;
+                // Quyết định Container dựa trên InjectSource (Sử dụng extension method)
+                var targetContainer = container.GetTargetContainer(field.Source);
 
                 field.FieldInfo.SetValue(instance, targetContainer.Resolve(field.FieldInfo.FieldType));
             }
