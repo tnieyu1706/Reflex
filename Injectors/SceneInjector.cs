@@ -1,6 +1,4 @@
 ﻿using Reflex.Core;
-using UnityEngine;
-using UnityEngine.Pool;
 using UnityEngine.SceneManagement;
 
 namespace Reflex.Injectors
@@ -9,9 +7,17 @@ namespace Reflex.Injectors
     {
         internal static void Inject(Scene scene, Container container)
         {
-            using var pooledObject1 = ListPool<GameObject>.Get(out var rootGameObjects);
-            scene.GetRootGameObjects(rootGameObjects);
-            GameObjectInjector.InjectRecursiveMany(rootGameObjects, container);
+            foreach (var rootObject in scene.GetRootGameObjects())
+            {
+                // [PRUNING] Skip branches that define their own LocalScope.
+                // The LocalScope itself will handle recursive injection for its branch.
+                if (rootObject.TryGetComponent<LocalScope>(out _))
+                {
+                    continue;
+                }
+
+                GameObjectInjector.InjectRecursive(rootObject, container);
+            }
         }
     }
 }

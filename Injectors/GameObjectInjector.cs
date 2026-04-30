@@ -1,69 +1,57 @@
-﻿using System.Collections.Generic;
-using Reflex.Core;
+﻿using Reflex.Core;
 using UnityEngine;
 using UnityEngine.Pool;
 
 namespace Reflex.Injectors
 {
-    public static class GameObjectInjector
+    internal static class GameObjectInjector
     {
-        public static void InjectSingle(GameObject gameObject, Container container)
+        /// <summary>
+        /// Injects dependencies into a single component.
+        /// </summary>
+        internal static void InjectSingle(Component component, Container container)
         {
-            if (gameObject.TryGetComponent<MonoBehaviour>(out var monoBehaviour))
+            if (component != null)
             {
-                AttributeInjector.Inject(monoBehaviour, container);
+                AttributeInjector.Inject(component, container);
             }
         }
 
-        public static void InjectObject(GameObject gameObject, Container container)
+        /// <summary>
+        /// Injects dependencies into all MonoBehaviours on a specific GameObject.
+        /// </summary>
+        internal static void InjectObject(GameObject gameObject, Container container)
         {
-            using var pooledObject = ListPool<MonoBehaviour>.Get(out var monoBehaviours);
-            gameObject.GetComponents<MonoBehaviour>(monoBehaviours);
-
-            for (var i = 0; i < monoBehaviours.Count; i++)
+            using (ListPool<MonoBehaviour>.Get(out var injectables))
             {
-                var monoBehaviour = monoBehaviours[i];
-
-                if (monoBehaviour != null)
+                gameObject.GetComponents(injectables);
+                for (var i = 0; i < injectables.Count; i++)
                 {
-                    AttributeInjector.Inject(monoBehaviour, container);
+                    InjectSingle(injectables[i], container);
                 }
             }
         }
 
-        public static void InjectRecursive(GameObject gameObject, Container container)
+        /// <summary>
+        /// Injects dependencies recursively into the GameObject and its children.
+        /// Optimization: Stops traversing down a branch if a LocalScope is encountered.
+        /// </summary>
+        internal static void InjectRecursive(GameObject gameObject, Container container)
         {
-            using var pooledObject = ListPool<MonoBehaviour>.Get(out var monoBehaviours);
-            gameObject.GetComponentsInChildren<MonoBehaviour>(true, monoBehaviours);
+            InjectObject(gameObject, container);
 
-            for (var i = 0; i < monoBehaviours.Count; i++)
+            for (var i = 0; i < gameObject.transform.childCount; i++)
             {
-                var monoBehaviour = monoBehaviours[i];
+                var child = gameObject.transform.GetChild(i).gameObject;
 
-                if (monoBehaviour != null)
+                // [PRUNING] Stop recursion if the child has a LocalScope, 
+                // as it manages its own container and injection.
+                if (child.TryGetComponent<LocalScope>(out _))
                 {
-                    AttributeInjector.Inject(monoBehaviour, container);
+                    continue;
                 }
-            }
-        }
 
-        public static void InjectRecursiveMany(List<GameObject> gameObject, Container container)
-        {
-            using var pooledObject = ListPool<MonoBehaviour>.Get(out var monoBehaviours);
-
-            for (var i = 0; i < gameObject.Count; i++)
-            {
-                gameObject[i].GetComponentsInChildren<MonoBehaviour>(true, monoBehaviours);
-
-                for (var j = 0; j < monoBehaviours.Count; j++)
-                {
-                    var monoBehaviour = monoBehaviours[j];
-
-                    if (monoBehaviour != null)
-                    {
-                        AttributeInjector.Inject(monoBehaviour, container);
-                    }
-                }
+                InjectRecursive(child, container);
             }
         }
     }
