@@ -1,13 +1,15 @@
 using Reflex.Extensions;
+using Reflex.Injectors;
 using UnityEngine;
 using UnityEngine.Pool;
 
 namespace Reflex.Core
 {
     /// <summary>
-    /// Acts as a data PROVIDER at the GameObject level.
+    /// Acts as a data PROVIDER and CONSUMER at the GameObject level.
     /// Creates a new child Container specifically for this GameObject and its children.
-    /// It installs bindings from attached <see cref="IInstaller"/> components but does NOT automatically inject them into components.
+    /// It installs bindings from attached <see cref="IInstaller"/> components and automatically 
+    /// injects dependencies recursively into this GameObject and its children.
     /// </summary>
     // Runs slightly after the Scene Container, but before all normal Injectors and Awakes
     [DefaultExecutionOrder(ContainerScope.SceneContainerScopeExecutionOrder + 10)]
@@ -38,6 +40,10 @@ namespace Reflex.Core
                     }
                 }
             });
+
+            // 4. Automatically trigger Recursive Injection for this branch
+            // Since SceneInjector skips this branch (Pruning), we MUST inject recursively here.
+            GameObjectInjector.InjectRecursive(gameObject, SelfContainer);
         }
 
         private void OnDestroy()

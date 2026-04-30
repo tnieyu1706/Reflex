@@ -144,6 +144,8 @@ namespace Reflex.Core
 
         private IEnumerable<IResolver> GetResolvers(Type contract)
         {
+            // This is where can you custom get Resolve by tree. This is problem.
+            // And Rewrite Resolvers for Container for ContainerBuilder.Build().
             if (ResolversByContract.TryGetValue(contract, out var resolvers))
             {
                 return resolvers;
