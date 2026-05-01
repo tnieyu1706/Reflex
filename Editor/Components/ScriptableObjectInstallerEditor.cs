@@ -7,6 +7,5 @@ namespace Reflex.Editor
     public class ScriptableObjectInstallerEditor : GenericInstallerEditor
     {
         protected override string Title => "Scriptable Object Bindings";
-        protected override string HelpText => "Add ScriptableObjects and select their respective contracts.";
     }
 }

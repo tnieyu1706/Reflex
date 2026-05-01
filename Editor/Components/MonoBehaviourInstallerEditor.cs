@@ -7,6 +7,5 @@ namespace Reflex.Editor
     public class MonoBehaviourInstallerEditor : GenericInstallerEditor
     {
         protected override string Title => "MonoBehaviour Bindings";
-        protected override string HelpText => "Add MonoBehaviours and select their respective contracts.";
     }
 }

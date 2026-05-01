@@ -6,12 +6,18 @@ using UnityEngine;
 
 namespace Reflex.Editor
 {
+    /// <summary>
+    /// Base custom editor for GenericInstaller. 
+    /// Handles the drawing of bindings, target assignment, and contract selection.
+    /// </summary>
     public abstract class GenericInstallerEditor : UnityEditor.Editor
     {
         private SerializedProperty _bindingsProp;
 
+        /// <summary>
+        /// The title displayed at the top of the inspector.
+        /// </summary>
         protected abstract string Title { get; }
-        protected abstract string HelpText { get; }
 
         protected virtual void OnEnable()
         {
@@ -24,54 +30,64 @@ namespace Reflex.Editor
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField(Title, EditorStyles.boldLabel);
-            EditorGUILayout.HelpBox(HelpText, MessageType.Info);
+            EditorGUILayout.Space(2);
 
             for (int i = 0; i < _bindingsProp.arraySize; i++)
             {
-                EditorGUILayout.BeginVertical(GUI.skin.box);
+                // Using EditorStyles.helpBox provides a clean, unified border
+                EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+
+                // FIX 1: Increment indent level inside the box so the foldout arrow doesn't bleed out of the left border
+                EditorGUI.indentLevel++;
 
                 var bindingProp = _bindingsProp.GetArrayElementAtIndex(i);
                 var targetProp = bindingProp.FindPropertyRelative("Target");
                 var contractsProp = bindingProp.FindPropertyRelative("Contracts");
                 var isExpandedProp = bindingProp.FindPropertyRelative("_isExpanded");
 
+                var targetObject = targetProp.objectReferenceValue;
+
                 EditorGUILayout.BeginHorizontal();
 
-                // Always display the Target assignment field
+                // FIX 2: Attach the label "Target N" directly to the Foldout instead of the PropertyField.
+                // This prevents massive empty gaps and makes the layout highly compact.
+                EditorGUI.BeginDisabledGroup(targetObject == null);
+                isExpandedProp.boolValue = EditorGUILayout.Foldout(isExpandedProp.boolValue, $"Target {i + 1}", true);
+                EditorGUI.EndDisabledGroup();
+
+                // Target Assignment Field (Uses GUIContent.none to snap directly next to the foldout label)
                 EditorGUI.BeginChangeCheck();
-                EditorGUILayout.PropertyField(targetProp, new GUIContent($"Target {i + 1}"));
+                EditorGUILayout.PropertyField(targetProp, GUIContent.none);
                 if (EditorGUI.EndChangeCheck())
                 {
                     contractsProp.ClearArray();
                     isExpandedProp.boolValue = true; // Automatically open the foldout when a new target is assigned
+                    targetObject = targetProp.objectReferenceValue; // Update local reference
                 }
 
-                // Remove button
-                if (GUILayout.Button("X", GUILayout.Width(24)))
+                // Remove Button
+                if (GUILayout.Button("X", GUILayout.Width(22)))
                 {
                     _bindingsProp.DeleteArrayElementAtIndex(i);
                     EditorGUILayout.EndHorizontal();
+                    // Must decrement indent level before breaking out to avoid GUI layout stack errors
+                    EditorGUI.indentLevel--;
                     EditorGUILayout.EndVertical();
                     break;
                 }
 
                 EditorGUILayout.EndHorizontal();
 
-                var targetObject = targetProp.objectReferenceValue;
-                if (targetObject != null)
+                // Contracts Selection
+                if (targetObject != null && isExpandedProp.boolValue)
                 {
                     EditorGUILayout.Space(2);
-
-                    // Dedicated foldout for Contracts section
-                    isExpandedProp.boolValue =
-                        EditorGUILayout.Foldout(isExpandedProp.boolValue, "Contracts Configuration", true);
-
-                    if (isExpandedProp.boolValue)
-                    {
-                        DrawContractsSelection(targetObject, contractsProp);
-                    }
+                    DrawContractsSelection(targetObject, contractsProp);
+                    EditorGUILayout.Space(4);
                 }
 
+                // Decrement indent back for the next element
+                EditorGUI.indentLevel--;
                 EditorGUILayout.EndVertical();
                 EditorGUILayout.Space(2);
             }
@@ -88,6 +104,9 @@ namespace Reflex.Editor
             serializedObject.ApplyModifiedProperties();
         }
 
+        /// <summary>
+        /// Draws the list of available interfaces and base classes for the selected target.
+        /// </summary>
         private void DrawContractsSelection(UnityEngine.Object targetObject, SerializedProperty contractsProp)
         {
             var availableTypes = GetAvailableContracts(targetObject.GetType());
@@ -105,7 +124,7 @@ namespace Reflex.Editor
                 var typeName = type.AssemblyQualifiedName;
                 bool isSelected = selectedTypeNames.Contains(typeName);
 
-                // Only display short Class/Interface names
+                // Display only the short Class/Interface name for a cleaner UI
                 string displayName = type.Name;
 
                 bool newSelected = EditorGUILayout.ToggleLeft(displayName, isSelected);
@@ -123,6 +142,10 @@ namespace Reflex.Editor
             EditorGUI.indentLevel--;
         }
 
+        /// <summary>
+        /// Retrieves all implemented interfaces and valid base classes for a given type.
+        /// Excludes native Unity classes to keep the list relevant.
+        /// </summary>
         private List<Type> GetAvailableContracts(Type type)
         {
             var types = new HashSet<Type>();
@@ -134,7 +157,7 @@ namespace Reflex.Editor
             }
 
             var currentBase = type.BaseType;
-            // Ignore Unity's base classes to keep the list clean (shared for both SC and Mono)
+            // Ignore Unity's base classes to keep the list clean
             while (currentBase != null &&
                    currentBase != typeof(MonoBehaviour) &&
                    currentBase != typeof(Behaviour) &&
