@@ -9,19 +9,20 @@ namespace Reflex.Components
     public class GenericBinding<T> where T : UnityEngine.Object
     {
         public T Target;
-        [HideInInspector]
-        public List<string> Contracts = new List<string>();
-#if UNITY_EDITOR
-        [HideInInspector]
-        public bool _isExpanded = true;
-#endif
+        [HideInInspector] public List<string> Contracts = new List<string>();
+        [HideInInspector] public bool _isExpanded = true;
     }
 
-    public abstract class GenericInstaller<T> : MonoBehaviour, IInstaller where T : UnityEngine.Object
+    public abstract class BaseGenericInstaller : MonoBehaviour, IInstaller
+    {
+        public abstract void InstallBindings(ContainerBuilder containerBuilder);
+    }
+
+    public abstract class GenericInstaller<T> : BaseGenericInstaller where T : UnityEngine.Object
     {
         [SerializeField] private List<GenericBinding<T>> _bindings = new List<GenericBinding<T>>();
 
-        public void InstallBindings(ContainerBuilder containerBuilder)
+        public override void InstallBindings(ContainerBuilder containerBuilder)
         {
             foreach (var binding in _bindings)
             {
@@ -40,7 +41,8 @@ namespace Reflex.Components
                     }
                     else
                     {
-                        Debug.LogWarning($"[Reflex] Cannot resolve contract type: {typeName} for target: {binding.Target.name}");
+                        Debug.LogWarning(
+                            $"[Reflex] Cannot resolve contract type: {typeName} for target: {binding.Target.name}");
                     }
                 }
 

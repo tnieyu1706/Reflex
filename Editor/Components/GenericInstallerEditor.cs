@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Reflex.Components;
 using UnityEditor;
 using UnityEngine;
 
@@ -10,14 +11,15 @@ namespace Reflex.Editor
     /// Base custom editor for GenericInstaller. 
     /// Handles the drawing of bindings, target assignment, and contract selection.
     /// </summary>
-    public abstract class GenericInstallerEditor : UnityEditor.Editor
+    [CustomEditor(typeof(BaseGenericInstaller), true)]
+    public class GenericInstallerEditor : UnityEditor.Editor
     {
         private SerializedProperty _bindingsProp;
 
         /// <summary>
         /// The title displayed at the top of the inspector.
         /// </summary>
-        protected abstract string Title { get; }
+        protected string Title => target.GetType().Name + " Bindings";
 
         protected virtual void OnEnable()
         {
