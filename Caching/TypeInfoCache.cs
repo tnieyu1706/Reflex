@@ -8,10 +8,11 @@ namespace Reflex.Caching
 {
     internal static class TypeInfoCache
     {
-        private const BindingFlags Flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly;
+        private const BindingFlags Flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance |
+                                           BindingFlags.DeclaredOnly;
 
         private static readonly Dictionary<Type, TypeAttributeInfo> _cache = new();
-        
+
         internal static TypeAttributeInfo Get(Type type)
         {
             if (!_cache.TryGetValue(type, out var info))
@@ -19,7 +20,7 @@ namespace Reflex.Caching
                 info = Generate(type);
                 _cache.Add(type, info);
             }
-    
+
             return info;
         }
 
@@ -28,15 +29,17 @@ namespace Reflex.Caching
             using var pooled1 = ListPool<InjectableFieldInfo>.Get(out var fieldList);
             using var pooled2 = ListPool<InjectablePropertyInfo>.Get(out var propertyList);
             using var pooled3 = ListPool<InjectableMethodInfo>.Get(out var methodList);
-            
+
             while (type != null && type != typeof(object))
             {
                 foreach (var field in type.GetFields(Flags))
                 {
                     var attribute = field.GetCustomAttribute<InjectAttribute>();
+                    var deepInjectable = field.IsDefined(typeof(DeepInjectableAttribute), true);
+
                     if (attribute != null)
                     {
-                        fieldList.Add(new InjectableFieldInfo(field, attribute.Source));
+                        fieldList.Add(new InjectableFieldInfo(field, attribute.Source, deepInjectable));
                     }
                 }
 
@@ -45,13 +48,14 @@ namespace Reflex.Caching
                     if (property.CanWrite)
                     {
                         var attribute = property.GetCustomAttribute<InjectAttribute>();
+                        var deepInjectable = property.IsDefined(typeof(DeepInjectableAttribute), true);
                         if (attribute != null)
                         {
-                            propertyList.Add(new InjectablePropertyInfo(property, attribute.Source));
+                            propertyList.Add(new InjectablePropertyInfo(property, attribute.Source, deepInjectable));
                         }
                     }
                 }
-                
+
                 foreach (var method in type.GetMethods(Flags))
                 {
                     var attribute = method.GetCustomAttribute<InjectAttribute>();

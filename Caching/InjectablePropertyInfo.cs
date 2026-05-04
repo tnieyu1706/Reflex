@@ -7,11 +7,13 @@ namespace Reflex.Caching
     {
         public readonly PropertyInfo PropertyInfo;
         public readonly InjectSource Source;
+        public readonly bool DeepInjectable;
 
-        public InjectablePropertyInfo(PropertyInfo propertyInfo, InjectSource source)
+        public InjectablePropertyInfo(PropertyInfo propertyInfo, InjectSource source, bool deepInjectable)
         {
             PropertyInfo = propertyInfo;
             Source = source;
+            DeepInjectable = deepInjectable;
         }
     }
 }

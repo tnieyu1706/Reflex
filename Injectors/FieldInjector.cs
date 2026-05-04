@@ -12,10 +12,15 @@ namespace Reflex.Injectors
         {
             try
             {
-                // Determine the Container based on InjectSource (Using extension method)
                 var targetContainer = container.GetTargetContainer(field.Source);
 
-                field.FieldInfo.SetValue(instance, targetContainer.Resolve(field.FieldInfo.FieldType));
+                if (!field.DeepInjectable)
+                {
+                    field.FieldInfo.SetValue(instance, targetContainer.Resolve(field.FieldInfo.FieldType));
+                    return;
+                }
+
+                AttributeInjector.Inject(instance, container);
             }
             catch (Exception e)
             {
