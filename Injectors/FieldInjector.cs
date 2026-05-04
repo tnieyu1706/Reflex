@@ -15,17 +15,16 @@ namespace Reflex.Injectors
             {
                 var targetContainer = container.GetTargetContainer(field.Scope);
 
-                // default
-                if (field.ResolutionMethod == InjectResolutionMethod.Inject)
+                switch (field.ResolutionMethod)
                 {
-                    field.FieldInfo.SetValue(instance, targetContainer.Resolve(field.FieldInfo.FieldType));
-                    return;
-                }
-
-                // binding handler
-                if (field.ResolutionMethod == InjectResolutionMethod.Binding)
-                {
-                    BindField(field, instance, targetContainer);
+                    // default
+                    case InjectResolutionMethod.Inject:
+                        field.FieldInfo.SetValue(instance, targetContainer.Resolve(field.FieldInfo.FieldType));
+                        return;
+                    // binding handler
+                    case InjectResolutionMethod.Binding:
+                        BindField(field, instance, targetContainer);
+                        break;
                 }
             }
             catch (Exception e)
@@ -42,16 +41,13 @@ namespace Reflex.Injectors
             }
             else
             {
-                var fieldValue = field.FieldInfo.GetValue(instance);
-                if (fieldValue == null)
-                {
-                    field.FieldInfo.SetValue(instance, targetContainer.Resolve(field.FieldInfo.FieldType));
-                }
-                else
-                {
-                    // inject only
-                    targetContainer.InjectObject(fieldValue);
-                }
+                // instantiate
+                var result = field.FieldInfo.GetValue(instance)
+                             ?? (targetContainer.Resolve(field.FieldInfo.FieldType)
+                                 ?? targetContainer.Instantiate(field.FieldInfo.FieldType));
+                // binding
+                targetContainer.InjectObject(result);
+                field.FieldInfo.SetValue(instance, result);
             }
         }
     }

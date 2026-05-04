@@ -15,18 +15,17 @@ namespace Reflex.Injectors
             {
                 var targetContainer = container.GetTargetContainer(property.Scope);
 
-                // default
-                if (property.ResolutionMethod == InjectResolutionMethod.Inject)
+                switch (property.ResolutionMethod)
                 {
-                    property.PropertyInfo.SetValue(instance,
-                        targetContainer.Resolve(property.PropertyInfo.PropertyType));
-                    return;
-                }
-
-                // binding handler
-                if (property.ResolutionMethod == InjectResolutionMethod.Binding)
-                {
-                    BindProperty(property, instance, targetContainer);
+                    // default
+                    case InjectResolutionMethod.Inject:
+                        property.PropertyInfo.SetValue(instance,
+                            targetContainer.Resolve(property.PropertyInfo.PropertyType));
+                        return;
+                    // binding handler
+                    case InjectResolutionMethod.Binding:
+                        BindProperty(property, instance, targetContainer);
+                        break;
                 }
             }
             catch (Exception e)
@@ -43,17 +42,14 @@ namespace Reflex.Injectors
             }
             else
             {
-                var fieldValue = property.PropertyInfo.GetValue(instance);
-                if (fieldValue == null)
-                {
-                    property.PropertyInfo.SetValue(instance,
-                        targetContainer.Resolve(property.PropertyInfo.PropertyType));
-                }
-                else
-                {
-                    // inject only
-                    targetContainer.InjectObject(fieldValue);
-                }
+                // instantiate
+                var result = property.PropertyInfo.GetValue(instance)
+                             ?? (targetContainer.Resolve(property.PropertyInfo.PropertyType)
+                                 ?? targetContainer.Instantiate(property.PropertyInfo.PropertyType));
+
+                // binding
+                targetContainer.InjectObject(result);
+                property.PropertyInfo.SetValue(instance, result);
             }
         }
     }

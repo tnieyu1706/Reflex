@@ -4,13 +4,13 @@ using UnityEngine;
 
 namespace Reflex.Components
 {
-    public class UnityObjectsEarlyInjector : MonoBehaviour, IEarlyInjector
+    public class ScriptableObjectsEarlyInjector : MonoBehaviour, IEarlyInjector
     {
-        [SerializeField] private List<Object> _unityObjects = new List<UnityEngine.Object>();
+        [SerializeField] private List<ScriptableObject> _scriptables = new();
 
         public void EarlyInjects(Container container)
         {
-            foreach (var obj in _unityObjects)
+            foreach (var obj in _scriptables)
             {
                 if (obj == null) continue;
                 container.InjectObject(obj);

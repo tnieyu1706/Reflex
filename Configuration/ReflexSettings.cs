@@ -23,20 +23,22 @@ namespace Reflex.Configuration
                     // This *should* be faster than non-async loading when project installers have a lot of references.
                     _instance = (ReflexSettings)_settingsRequest.asset;
                 }
-                
+
                 Assert.IsNotNull(_instance, "ReflexSettings not found in Resources folder.\n" +
                                             "Please create ReflexSettings using right mouse button over Resources folder, Create > Reflex > Settings.");
                 return _instance;
             }
         }
-        
+
         [field: SerializeField] public LogLevel LogLevel { get; private set; }
+        [field: SerializeField] public bool EnableLiskovPrinciple { get; private set; } = true;
         [field: SerializeField] public List<ContainerScope> RootScopes { get; private set; }
 
         private void OnValidate()
         {
             _instance = this;
             ReflexLogger.UpdateLogLevel(LogLevel);
+            ReflexLogger.UpdateLiskovPrincipleWarning(EnableLiskovPrinciple);
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]

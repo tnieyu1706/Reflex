@@ -148,7 +148,16 @@ namespace Reflex.Core
             {
                 // 3. Get resolvers and resolve using the last registered resolver.
                 var resolvers = GetResolvers(type);
+                if (resolvers == null && !ReflexLogger.PerformLiskov)
+                {
+                    return null;
+                }
+
                 return resolvers.Last().Resolve(this);
+            }
+            catch (InvalidOperationException e)
+            {
+                throw new CircularDependencyException(ResolutionChain, type);
             }
             finally
             {
@@ -159,7 +168,7 @@ namespace Reflex.Core
 
         public TContract Resolve<TContract>() => (TContract)Resolve(typeof(TContract));
 
-        public object Single(Type type) => GetResolvers(type).Single().Resolve(this);
+        public object Single(Type type) => GetResolvers(type)?.Single().Resolve(this);
 
         public TContract Single<TContract>() => (TContract)Single(typeof(TContract));
 
@@ -198,7 +207,10 @@ namespace Reflex.Core
                 return resolvers;
             }
 
-            throw new UnknownContractException(contract);
+            if (ReflexLogger.PerformLiskov)
+                throw new UnknownContractException(contract);
+
+            return null;
         }
 
         private void OverrideSelfInjection()

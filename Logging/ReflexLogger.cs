@@ -7,12 +7,24 @@ namespace Reflex.Logging
     internal static class ReflexLogger
     {
         private static LogLevel _logLevel;
+        private static bool _enableLiskovPrincipleWarning;
+        
+        public static bool PerformLiskov => _enableLiskovPrincipleWarning;
 
         static ReflexLogger()
         {
             var reflexSettings = ReflexSettings.Instance;
             _logLevel = reflexSettings.LogLevel;
             Log($"Reflex LogLevel set to {_logLevel}", LogLevel.Info);
+        }
+
+        public static void UpdateLiskovPrincipleWarning(bool enable)
+        {
+            if (enable != _enableLiskovPrincipleWarning)
+            {
+                _enableLiskovPrincipleWarning = enable;
+                Log($"Reflex Liskov Principle Warning set to {_enableLiskovPrincipleWarning}", LogLevel.Info);
+            }
         }
 
         public static void UpdateLogLevel(LogLevel logLevel)
@@ -23,14 +35,14 @@ namespace Reflex.Logging
                 Log($"Reflex LogLevel set to {_logLevel}", LogLevel.Info);
             }
         }
-        
+
         public static void Log(object message, LogLevel logLevel, UnityEngine.Object context = null)
         {
             if (logLevel < _logLevel)
             {
                 return;
             }
-            
+
             switch (logLevel)
             {
                 case LogLevel.Development: Debug.Log(message, context); break;
