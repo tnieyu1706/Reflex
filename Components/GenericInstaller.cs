@@ -20,7 +20,7 @@ namespace Reflex.Components
 
     public abstract class GenericInstaller<T> : BaseGenericInstaller where T : UnityEngine.Object
     {
-        [SerializeField] private List<GenericBinding<T>> _bindings = new List<GenericBinding<T>>();
+        [SerializeField] protected List<GenericBinding<T>> _bindings = new List<GenericBinding<T>>();
 
         public override void InstallBindings(ContainerBuilder containerBuilder)
         {

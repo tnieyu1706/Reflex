@@ -9,6 +9,7 @@ using Reflex.Logging;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Scripting;
+using Debug = System.Diagnostics.Debug;
 
 [assembly: AlwaysLinkAssembly]
 
@@ -32,6 +33,7 @@ namespace Reflex.Injectors
 
                 if (ContainersPerScene.TryAdd(scene, sceneContainer))
                 {
+                    containerScope.EarlyInjects(sceneContainer);
                     SceneInjector.Inject(scene, sceneContainer);
                 }
                 else
@@ -69,6 +71,8 @@ namespace Reflex.Injectors
         {
             var reflexSettings = ReflexSettings.Instance;
             var builder = new ContainerBuilder().SetName("RootContainer");
+            Action<Container> earlyInjectHandlers = container =>
+                ReflexLogger.Log($"Executing Root Early Injects at {container.Name}", LogLevel.Development);
 
             if (reflexSettings.RootScopes != null)
             {
@@ -77,10 +81,14 @@ namespace Reflex.Injectors
                     rootScope.InstallBindings(builder);
                     ReflexLogger.Log($"Root Bindings Installed from '{rootScope.name}'", LogLevel.Info,
                         rootScope.gameObject);
+                    earlyInjectHandlers += rootScope.EarlyInjects;
                 }
             }
 
-            return builder.Build();
+            var rootContainer = builder.Build();
+            earlyInjectHandlers?.Invoke(rootContainer);
+
+            return rootContainer;
         }
 
         private static Container CreateSceneContainer(Scene scene, ContainerScope containerScope)

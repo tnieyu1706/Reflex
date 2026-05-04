@@ -33,9 +33,22 @@ namespace Reflex.Core
             {
                 GetComponentsInChildren(installers);
 
-                for (var i = 0; i < installers.Count; i++)
+                foreach (var installer in installers)
                 {
-                    installers[i].InstallBindings(containerBuilder);
+                    installer.InstallBindings(containerBuilder);
+                }
+            }
+        }
+
+        public void EarlyInjects(Container container)
+        {
+            using (ListPool<IEarlyInjector>.Get(out var injectors))
+            {
+                GetComponentsInChildren(injectors);
+
+                foreach (var injector in injectors)
+                {
+                    injector.EarlyInjects(container);
                 }
             }
         }

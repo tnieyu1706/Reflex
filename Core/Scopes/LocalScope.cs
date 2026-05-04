@@ -29,26 +29,40 @@ namespace Reflex.Core
             SelfContainer = parentContainer.Scope(builder =>
             {
                 builder.SetName(Reflex.Utilities.ScopeUtils.GetLocalContainerName(gameObject));
-
                 // 3. Get all Installers attached to *this* GameObject to install bindings
-                using (ListPool<IInstaller>.Get(out var installers))
-                {
-                    GetComponents(installers);
-                    for (var i = 0; i < installers.Count; i++)
-                    {
-                        installers[i].InstallBindings(builder);
-                    }
-                }
+                InstallBindings(builder);
             });
 
             // 4. Automatically trigger Recursive Injection for this branch
             // Since SceneInjector skips this branch (Pruning), we MUST inject recursively here.
+            this.EarlyInjects(SelfContainer);
             GameObjectInjector.InjectRecursive(gameObject, SelfContainer);
         }
 
-        private void OnDestroy()
+        public void InstallBindings(ContainerBuilder containerBuilder)
         {
-            SelfContainer?.Dispose();
+            using (ListPool<IInstaller>.Get(out var installers))
+            {
+                GetComponents(installers);
+
+                foreach (var installer in installers)
+                {
+                    installer.InstallBindings(containerBuilder);
+                }
+            }
+        }
+
+        public void EarlyInjects(Container container)
+        {
+            using (ListPool<IEarlyInjector>.Get(out var injectors))
+            {
+                GetComponents(injectors);
+
+                foreach (var injector in injectors)
+                {
+                    injector.EarlyInjects(container);
+                }
+            }
         }
     }
 }
