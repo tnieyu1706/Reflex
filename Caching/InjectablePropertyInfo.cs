@@ -3,17 +3,15 @@ using Reflex.Enums;
 
 namespace Reflex.Caching
 {
-    internal sealed class InjectablePropertyInfo
+    internal sealed class InjectablePropertyInfo : BaseInjectableInfo
     {
         public readonly PropertyInfo PropertyInfo;
-        public readonly InjectSource Source;
-        public readonly bool DeepInjectable;
 
-        public InjectablePropertyInfo(PropertyInfo propertyInfo, InjectSource source, bool deepInjectable)
+        public InjectablePropertyInfo(PropertyInfo propertyInfo, InjectScope scope,
+            InjectResolutionMethod resolutionMethod)
+            : base(scope, resolutionMethod)
         {
             PropertyInfo = propertyInfo;
-            Source = source;
-            DeepInjectable = deepInjectable;
         }
     }
 }

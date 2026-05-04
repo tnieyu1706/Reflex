@@ -35,11 +35,11 @@ namespace Reflex.Caching
                 foreach (var field in type.GetFields(Flags))
                 {
                     var attribute = field.GetCustomAttribute<InjectAttribute>();
-                    var deepInjectable = field.IsDefined(typeof(DeepInjectableAttribute), true);
-
                     if (attribute != null)
                     {
-                        fieldList.Add(new InjectableFieldInfo(field, attribute.Source, deepInjectable));
+                        fieldList.Add(
+                            new InjectableFieldInfo(field, attribute.Scope, attribute.ResolutionMethod)
+                        );
                     }
                 }
 
@@ -48,10 +48,11 @@ namespace Reflex.Caching
                     if (property.CanWrite)
                     {
                         var attribute = property.GetCustomAttribute<InjectAttribute>();
-                        var deepInjectable = property.IsDefined(typeof(DeepInjectableAttribute), true);
                         if (attribute != null)
                         {
-                            propertyList.Add(new InjectablePropertyInfo(property, attribute.Source, deepInjectable));
+                            propertyList.Add(
+                                new InjectablePropertyInfo(property, attribute.Scope, attribute.ResolutionMethod)
+                            );
                         }
                     }
                 }
@@ -61,7 +62,7 @@ namespace Reflex.Caching
                     var attribute = method.GetCustomAttribute<InjectAttribute>();
                     if (attribute != null)
                     {
-                        methodList.Add(new InjectableMethodInfo(method, attribute.Source));
+                        methodList.Add(new InjectableMethodInfo(method, attribute.Scope));
                     }
                 }
 

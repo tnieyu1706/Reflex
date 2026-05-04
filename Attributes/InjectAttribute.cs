@@ -12,11 +12,16 @@ namespace Reflex.Attributes
         /// Specifies the target container to resolve this dependency from.
         /// Defaults to the local scope (which includes inherited bindings).
         /// </summary>
-        public InjectSource Source { get; set; }
+        public InjectScope Scope { get; set; }
+        
+        public InjectResolutionMethod ResolutionMethod { get; set; }
 
-        public InjectAttribute(InjectSource source = InjectSource.Default)
+        public InjectAttribute(
+            InjectScope scope = InjectScope.Default,
+            InjectResolutionMethod resolutionMethod = InjectResolutionMethod.Inject)
         {
-            Source = source;
+            Scope = scope;
+            ResolutionMethod = resolutionMethod;
         }
     }
 }

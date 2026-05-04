@@ -7,13 +7,13 @@ namespace Reflex.Caching
     {
         public readonly MethodInfo MethodInfo;
         public readonly ParameterInfo[] Parameters;
-        public readonly InjectSource Source;
+        public readonly InjectScope Scope;
 
-        public InjectableMethodInfo(MethodInfo methodInfo, InjectSource source)
+        public InjectableMethodInfo(MethodInfo methodInfo, InjectScope scope)
         {
             MethodInfo = methodInfo;
             Parameters = methodInfo.GetParameters();
-            Source = source;
+            Scope = scope;
         }
     }
 }

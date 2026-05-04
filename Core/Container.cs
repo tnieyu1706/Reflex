@@ -98,14 +98,14 @@ namespace Reflex.Core
         public object Construct(Type concrete)
         {
             var instance = Instantiate(concrete);
-            Bind(instance);
+            InjectObject(instance);
             return instance;
         }
 
         /// <summary>
         /// Injects dependencies into an existing instance's fields, properties, and methods marked with [Inject].
         /// </summary>
-        public void Bind(object instance)
+        public void InjectObject(object instance)
         {
             AttributeInjector.Inject(instance, this);
         }

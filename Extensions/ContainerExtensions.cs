@@ -21,14 +21,14 @@ namespace Reflex.Extensions
         /// <summary>
         /// Resolves the correct target container based on the requested InjectSource.
         /// </summary>
-        internal static Container GetTargetContainer(this Container currentContainer, InjectSource source)
+        internal static Container GetTargetContainer(this Container currentContainer, InjectScope scope)
         {
-            switch (source)
+            switch (scope)
             {
-                case InjectSource.Root:
+                case InjectScope.Root:
                     return Container.RootContainer ?? currentContainer;
 
-                case InjectSource.Scene:
+                case InjectScope.Scene:
                     var node = currentContainer;
 
                     // Traverse up to find the exact container registered to a Scene
@@ -46,8 +46,8 @@ namespace Reflex.Extensions
                     // Fallback to current if no scene container found (e.g. isolated testing context)
                     return currentContainer;
 
-                case InjectSource.Local:
-                case InjectSource.Default:
+                case InjectScope.Local:
+                case InjectScope.Default:
                 default:
                     // Local and Default simply use the context's current container
                     return currentContainer;
@@ -145,7 +145,7 @@ namespace Reflex.Extensions
             try
             {
                 component = gameObject.AddComponent<T>();
-                container.Bind(component);
+                container.InjectObject(component);
             }
             finally
             {
@@ -182,7 +182,7 @@ namespace Reflex.Extensions
             try
             {
                 component = gameObject.AddComponent(componentType);
-                container.Bind(component);
+                container.InjectObject(component);
             }
             finally
             {

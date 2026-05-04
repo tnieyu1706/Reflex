@@ -71,6 +71,7 @@ namespace Reflex.Injectors
         {
             var reflexSettings = ReflexSettings.Instance;
             var builder = new ContainerBuilder().SetName("RootContainer");
+
             Action<Container> earlyInjectHandlers = container =>
                 ReflexLogger.Log($"Executing Root Early Injects at {container.Name}", LogLevel.Development);
 
@@ -93,11 +94,20 @@ namespace Reflex.Injectors
 
         private static Container CreateSceneContainer(Scene scene, ContainerScope containerScope)
         {
-            if (Container.RootContainer == null)
-            {
-                Container.RootContainer = CreateRootContainer();
-            }
+            Container.RootContainer ??= CreateRootContainer();
 
+            var parentContainer = SetParentForSceneContainer(scene, containerScope);
+
+            return parentContainer.Scope(builder =>
+            {
+                builder.SetName(Reflex.Utilities.ScopeUtils.GetSceneContainerName(scene));
+                containerScope.InstallBindings(builder);
+                ReflexLogger.Log($"Scene ({scene.name}) Bindings Installed", LogLevel.Info, containerScope.gameObject);
+            });
+        }
+
+        private static Container SetParentForSceneContainer(Scene scene, ContainerScope containerScope)
+        {
             // Fallback to RootContainer
             Container parentContainer = Container.RootContainer;
 
@@ -132,12 +142,7 @@ namespace Reflex.Injectors
                 }
             }
 
-            return parentContainer.Scope(builder =>
-            {
-                builder.SetName(Reflex.Utilities.ScopeUtils.GetSceneContainerName(scene));
-                containerScope.InstallBindings(builder);
-                ReflexLogger.Log($"Scene ({scene.name}) Bindings Installed", LogLevel.Info, containerScope.gameObject);
-            });
+            return parentContainer;
         }
 
         [Conditional("UNITY_EDITOR")]

@@ -21,7 +21,7 @@ namespace Reflex.Injectors
             var arguments = ArrayPool.Rent(methodParametersLength);
 
             // Determine the Container based on InjectSource (Using extension method)
-            var targetContainer = container.GetTargetContainer(method.Source);
+            var targetContainer = container.GetTargetContainer(method.Scope);
 
             try
             {

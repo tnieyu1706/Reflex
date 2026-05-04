@@ -13,7 +13,7 @@ namespace Reflex.Components
             foreach (var obj in _unityObjects)
             {
                 if (obj == null) continue;
-                container.Bind(obj);
+                container.InjectObject(obj);
             }
         }
     }

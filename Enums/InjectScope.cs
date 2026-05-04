@@ -3,7 +3,7 @@ namespace Reflex.Enums
     /// <summary>
     /// Defines where the dependency should be resolved from in the Container hierarchy.
     /// </summary>
-    public enum InjectSource
+    public enum InjectScope
     {
         /// <summary>
         /// Resolves from the current container (which inherently includes parent bindings).
