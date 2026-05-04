@@ -6,23 +6,17 @@ using UnityEngine;
 namespace Reflex.Components
 {
     [Serializable]
-    public class GenericBinding<T> where T : UnityEngine.Object
+    public class GenericBinding<T>
     {
         public T Target;
-        [HideInInspector] public List<string> Contracts = new List<string>();
-        [HideInInspector] public bool _isExpanded = true;
+        public List<string> Contracts = new List<string>();
     }
 
-    public abstract class BaseGenericInstaller : MonoBehaviour, IInstaller
-    {
-        public abstract void InstallBindings(ContainerBuilder containerBuilder);
-    }
-
-    public abstract class GenericInstaller<T> : BaseGenericInstaller where T : UnityEngine.Object
+    public abstract class GenericInstaller<T> : MonoBehaviour, IInstaller
     {
         [SerializeField] protected List<GenericBinding<T>> _bindings = new List<GenericBinding<T>>();
 
-        public override void InstallBindings(ContainerBuilder containerBuilder)
+        public virtual void InstallBindings(ContainerBuilder containerBuilder)
         {
             foreach (var binding in _bindings)
             {
@@ -42,7 +36,7 @@ namespace Reflex.Components
                     else
                     {
                         Debug.LogWarning(
-                            $"[Reflex] Cannot resolve contract type: {typeName} for target: {binding.Target.name}");
+                            $"[Reflex] Cannot resolve contract type: {typeName} for target: {binding.GetType().Name}");
                     }
                 }
 
