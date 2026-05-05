@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using Object = System.Object;
 
 namespace Reflex.Editor
 {
@@ -129,9 +130,9 @@ namespace Reflex.Editor
             var result = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(a => a.GetTypes())
                 .Where(t =>
-                    t.IsAssignableFrom(targetType) &&
-                    t != targetType &&
-                    !typeof(UnityEngine.Object).IsAssignableFrom(t)
+                    t.IsAssignableFrom(targetType)
+                    && t != typeof(Object)
+                    && !(typeof(UnityEngine.Object).IsAssignableFrom(t) && t != targetType)
                 )
                 .OrderBy(t => t.IsInterface ? 0 : 1) // interface lên trước
                 .ThenBy(t => t.Name)
