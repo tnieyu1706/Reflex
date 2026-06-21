@@ -21,7 +21,7 @@ namespace Reflex.Core
 #if UNITY_EDITOR
         internal static readonly List<Container> RootContainers = new();
 #endif
-        
+
         internal Container(string name, Container parent, Dictionary<Type, List<IResolver>> resolversByContract, DisposableCollection disposables)
         {
             Diagnosis.RegisterBuildCallSite(this);
@@ -70,7 +70,20 @@ namespace Reflex.Core
             var scoped = builder.Build();
             return scoped;
         }
-        
+
+        #region Construction
+
+        public T Create<T>() => (T)Create(typeof(T));
+        public object Create(Type concrete)
+        {
+            return ConstructorInjector.Construct(concrete, this);
+        }
+
+        public void Bind(object instance)
+        {
+            AttributeInjector.Inject(instance, this);
+        }
+
         public T Construct<T>()
         {
             return (T)Construct(typeof(T));
@@ -78,11 +91,13 @@ namespace Reflex.Core
 
         public object Construct(Type concrete)
         {
-            var instance = ConstructorInjector.Construct(concrete, this);
-            AttributeInjector.Inject(instance, this);   
+            var instance = Create(concrete);
+            Bind(instance);
             return instance;
         }
-        
+
+        #endregion
+
         public object Resolve(Type type)
         {
             if (type.IsEnumerable(out var elementType))
@@ -100,7 +115,7 @@ namespace Reflex.Core
         {
             return (TContract)Resolve(typeof(TContract));
         }
-        
+
         public object Single(Type type)
         {
             return GetResolvers(type).Single().Resolve(this);
@@ -138,7 +153,7 @@ namespace Reflex.Core
         public IEnumerable<TContract> All<TContract>()
         {
             return ResolversByContract.TryGetValue(typeof(TContract), out var resolvers)
-                ? resolvers.Select(resolver => (TContract) resolver.Resolve(this)).ToArray()
+                ? resolvers.Select(resolver => (TContract)resolver.Resolve(this)).ToArray()
                 : Enumerable.Empty<TContract>();
         }
 
@@ -151,7 +166,7 @@ namespace Reflex.Core
 
             throw new UnknownContractException(contract);
         }
-        
+
         private void OverrideSelfInjection()
         {
             ResolversByContract[typeof(Container)] = new List<IResolver> { new SingletonValueResolver(this) };

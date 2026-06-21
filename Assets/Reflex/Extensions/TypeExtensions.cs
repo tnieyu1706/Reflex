@@ -48,5 +48,31 @@ namespace Reflex.Extensions
 
             return type.FullName;
         }
+        
+        internal static HashSet<Type> GetAllParentTypes(this Type type)
+        {
+            HashSet<Type> result = new();
+
+            Type current = type.BaseType;
+            while (current != null)
+            {
+                result.Add(current);
+                current = current.BaseType;
+            }
+
+            foreach (var i in type.GetInterfaces())
+            {
+                result.Add(i);
+            }
+
+            return result;
+        }
+
+        internal static HashSet<Type> GetAllParentTypesWithSelf(this Type type)
+        {
+            var result = GetAllParentTypes(type);
+            result.Add(type);
+            return result;
+        }
     }
 }

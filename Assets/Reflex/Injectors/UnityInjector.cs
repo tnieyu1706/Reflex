@@ -17,8 +17,8 @@ namespace Reflex.Injectors
     internal static class UnityInjector
     {
         internal static Action<Scene, ContainerScope> OnSceneLoaded;
-        internal static Dictionary<Scene, Container> ContainersPerScene { get; } = new();
-        
+        public static Dictionary<Scene, Container> ContainersPerScene { get; } = new();
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         private static void AfterAssembliesLoaded()
         {
@@ -39,7 +39,7 @@ namespace Reflex.Injectors
                     throw new SceneHasMultipleSceneScopesException(scene);
                 }
             }
-            
+
             void DisposeScene(Scene scene)
             {
                 ReflexLogger.Log($"Scene {scene.name} ({scene.GetHashCode()}) unloaded", LogLevel.Development);
@@ -49,18 +49,18 @@ namespace Reflex.Injectors
                     sceneContainer.Dispose();
                 }
             }
-            
+
             void DisposeProject()
             {
                 Container.RootContainer?.Dispose();
                 Container.RootContainer = null;
-                
+
                 // Unsubscribe from static events ensuring that Reflex works with domain reloading set to false
                 OnSceneLoaded -= InjectScene;
                 SceneManager.sceneUnloaded -= DisposeScene;
                 Application.quitting -= DisposeProject;
             }
-            
+
             OnSceneLoaded += InjectScene;
             SceneManager.sceneUnloaded += DisposeScene;
             Application.quitting += DisposeProject;
@@ -79,7 +79,7 @@ namespace Reflex.Injectors
                     ReflexLogger.Log($"Root Bindings Installed from '{rootScope.name}'", LogLevel.Info, rootScope.gameObject);
                 }
             }
-            
+
             ContainerScope.OnRootContainerBuilding?.Invoke(builder);
             return builder.Build();
         }
@@ -90,14 +90,55 @@ namespace Reflex.Injectors
             {
                 Container.RootContainer = CreateRootContainer();
             }
-            
-            return Container.RootContainer.Scope(builder =>
+
+            var parentContainer = SetParentForSceneContainer(scene, containerScope);
+
+            return parentContainer.Scope(builder =>
             {
                 builder.SetName($"{scene.name} ({scene.GetHashCode()})");
                 containerScope.InstallBindings(builder);
                 ContainerScope.OnSceneContainerBuilding?.Invoke(scene, builder);
                 ReflexLogger.Log($"Scene ({scene.name}) Bindings Installed", LogLevel.Info, containerScope.gameObject);
             });
+        }
+
+        private static Container SetParentForSceneContainer(Scene scene, ContainerScope containerScope)
+        {
+            // Fallback to RootContainer
+            Container parentContainer = Container.RootContainer;
+
+            // Check if a Parent Scene is defined
+            if (!string.IsNullOrEmpty(containerScope.ParentSceneName))
+            {
+                var parentScene = SceneManager.GetSceneByName(containerScope.ParentSceneName);
+
+                // Parent scene must be loaded before the child scene
+                if (parentScene.IsValid() && parentScene.isLoaded)
+                {
+                    if (ContainersPerScene.TryGetValue(parentScene, out var parentSceneContainer))
+                    {
+                        parentContainer = parentSceneContainer;
+                        ReflexLogger.Log(
+                            $"Found Parent Scene '{containerScope.ParentSceneName}' for Child Scene '{scene.name}'",
+                            LogLevel.Development);
+                    }
+                    else
+                    {
+                        ReflexLogger.Log(
+                            $"Parent scene '{containerScope.ParentSceneName}' is loaded but lacks a ContainerScope. Falling back to RootContainer.",
+                            LogLevel.Warning);
+                    }
+                }
+                else
+                {
+                    // Graceful fallback for isolated scene testing (Isolated Testing)
+                    ReflexLogger.Log(
+                        $"Parent scene '{containerScope.ParentSceneName}' is not loaded. Gracefully falling back to RootContainer (Isolated Test Mode).",
+                        LogLevel.Info);
+                }
+            }
+
+            return parentContainer;
         }
 
         /// <summary>
