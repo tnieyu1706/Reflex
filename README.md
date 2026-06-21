@@ -19,7 +19,7 @@ This fork extends the original with multi-scene parent-child container support, 
 Add via Unity Package Manager (Git URL):
 
 ```
-https://github.com/your-org/ReflexOrigin.git?path=Assets/Reflex
+https://github.com/tnieyu1706/Reflex.git?path=Assets/Reflex
 ```
 
 Or copy `Assets/Reflex/` directly into your project.
